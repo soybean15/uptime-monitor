@@ -131,7 +131,7 @@ class UptimeChecker extends Command
         if ($wasUp !== $isUp) {
             if (!$isUp) {
                 // Site went DOWN - notify all users
-                $this->notifyAllUsers($site, 'down', $errorMessage);
+                // $this->notifyAllUsers($site, 'down', $errorMessage);
                 
                 // Increase check interval when site fails (multiply by 2, max 60 minutes)
                 $newInterval = min($site->check_interval * 2, 60);
@@ -139,7 +139,7 @@ class UptimeChecker extends Command
                 $this->line("  ⚠️  {$site->name}: DOWN - Increased check interval to {$newInterval} minutes");
             } else {
                 // Site came BACK UP - notify all users
-                $this->notifyAllUsers($site, 'up');
+                // $this->notifyAllUsers($site, 'up');
                 
                 // Reset check interval to default (5 minutes)
                 $site->update(['check_interval' => 5]);
