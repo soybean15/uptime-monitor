@@ -12,6 +12,8 @@ services:
             - .:/var/www:cached
         networks:
             - proxy-network
+        environment:
+            - APP_NAME=${APP_NAME}
 
     ####################################################################################################
     # Nginx
@@ -29,6 +31,13 @@ services:
             - php
         networks:
             - proxy-network
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost/"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
 
     ####################################################################################################
     # DATABASE (MySQL)
@@ -50,10 +59,12 @@ services:
             MYSQL_PASSWORD: ${DB_PASSWORD}
         networks:
             - proxy-network
+        restart: unless-stopped
         healthcheck:
             test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
             timeout: 20s
             retries: 10
+            interval: 10s
 
     ####################################################################################################
     # phpMyAdmin
@@ -75,6 +86,10 @@ services:
             - .docker/phpmyadmin/sessions:/sessions
         networks:
             - proxy-network
+        restart: unless-stopped
+        depends_on:
+            mysql:
+                condition: service_healthy
 
     ####################################################################################################
     # Adminer (Optional)
