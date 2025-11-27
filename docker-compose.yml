@@ -28,6 +28,7 @@ services:
     # DATABASE (MySQL)
     ####################################################################################################
     db:
+        container_name: ${APP_NAME}-mysql
         image: mysql:8.1
         ports:
             - 3306:3306
@@ -37,10 +38,12 @@ services:
             - .docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
             - .docker/db/sql:/docker-entrypoint-initdb.d
         environment:
-            MYSQL_ROOT_PASSWORD: root
-            MYSQL_DATABASE: refactorian
-            MYSQL_USER: refactorian
-            MYSQL_PASSWORD: refactorian
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+     
+
 
     ####################################################################################################
     # phpMyAdmin
