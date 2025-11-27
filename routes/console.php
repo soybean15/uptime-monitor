@@ -10,3 +10,6 @@ use Illuminate\Support\Facades\Schedule;
 
 // Schedule uptime checks every minute
 Schedule::command('uptime:check')->everyMinute();
+
+// Prune site logs older than 30 days daily at 2 AM
+Schedule::command('logs:prune --days=30')->dailyAt('02:00');
