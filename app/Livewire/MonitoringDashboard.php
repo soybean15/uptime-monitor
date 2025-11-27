@@ -105,9 +105,12 @@ class MonitoringDashboard extends Component
 
     protected function getAverageResponseTime(Carbon $startDate): ?int
     {
-        return SiteLog::where('checked_at', '>=', $startDate)
+        $avg = SiteLog::where('checked_at', '>=', $startDate)
             ->where('is_up', true)
+            ->whereNotNull('response_time')
             ->avg('response_time');
+        
+        return $avg ? (int) round($avg) : null;
     }
 
     protected function getTotalChecks(Carbon $startDate): int
@@ -133,16 +136,17 @@ class MonitoringDashboard extends Component
                 DB::raw('SUM(CASE WHEN is_up = 1 THEN 1 ELSE 0 END) as up_count'),
                 DB::raw('SUM(CASE WHEN is_up = 0 THEN 1 ELSE 0 END) as down_count')
             )
-            ->groupBy('period')
+            ->groupByRaw($groupBy['select'])
             ->orderBy('period')
             ->get();
 
         return [
-            'labels' => $data->pluck('period')->toArray(),
+            'labels' => $data->pluck('period')->map(fn($p) => (string)$p)->toArray(),
             'uptime' => $data->map(function($item) {
-                return $item->total > 0 ? round(($item->up_count / $item->total) * 100, 2) : 100;
+                $total = (int) $item->total;
+                return $total > 0 ? round(((int)$item->up_count / $total) * 100, 2) : 100;
             })->toArray(),
-            'checks' => $data->pluck('total')->toArray(),
+            'checks' => $data->pluck('total')->map(fn($v) => (int)$v)->toArray(),
         ];
     }
 
@@ -152,6 +156,7 @@ class MonitoringDashboard extends Component
         
         $data = SiteLog::where('checked_at', '>=', $startDate)
             ->where('is_up', true)
+            ->whereNotNull('response_time')
             ->select(
                 DB::raw($groupBy['select'] . ' as period'),
                 DB::raw('AVG(response_time) as avg_response'),
@@ -164,7 +169,9 @@ class MonitoringDashboard extends Component
 
         return [
             'labels' => $data->pluck('period')->toArray(),
-            'average' => $data->pluck('avg_response')->map(fn($v) => round($v, 2))->toArray(),
+            'average' => $data->map(function($item) {
+                return $item->avg_response ? round($item->avg_response, 0) : 0;
+            })->toArray(),
             'min' => $data->pluck('min_response')->toArray(),
             'max' => $data->pluck('max_response')->toArray(),
         ];

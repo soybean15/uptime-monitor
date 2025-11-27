@@ -23,7 +23,12 @@ RUN apt-get install -y libfreetype6-dev libjpeg62-turbo-dev libpng-dev && \
 docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/ && \
 docker-php-ext-install gd
 
-# redis
+
+
+RUN apt-get install -y supervisor
+
+# exif
+RUN docker-php-ext-install exif
 RUN pecl install redis && docker-php-ext-enable redis
 
 # pcov
@@ -55,12 +60,15 @@ ENV PATH $PATH:/composer/vendor/bin
 RUN composer config --global process-timeout 3600
 RUN composer global require "laravel/installer"
 
-WORKDIR /root
-RUN git clone https://github.com/seebi/dircolors-solarized
+
+COPY supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+
+
 
 EXPOSE 5173
 WORKDIR /var/www
 
 #entrypoint
 ENTRYPOINT ["entrypoint.sh"]
-CMD ["php-fpm"]
+# CMD ["php-fpm"]
+CMD ["/usr/bin/supervisord", "-n"]

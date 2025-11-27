@@ -4,8 +4,11 @@ namespace App\Console\Commands;
 
 use App\Models\Site;
 use App\Models\SiteLog;
+use App\Notifications\SiteDownNotification;
+use App\Notifications\SiteUpNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Carbon\Carbon;
 
 class UptimeChecker extends Command
@@ -113,6 +116,9 @@ class UptimeChecker extends Command
             'checked_at' => Carbon::now(),
         ]);
 
+        // Handle status change notifications
+        $wasUp = $site->is_up;
+
         // Update site status
         $site->update([
             'is_up' => $isUp,
@@ -121,9 +127,43 @@ class UptimeChecker extends Command
             'last_status_code' => $statusCode,
         ]);
 
-        // Log to console
-        $status = $isUp ? '<info>UP</info>' : '<error>DOWN</error>';
-        $this->newLine();
-        $this->line("  {$site->name}: {$status} ({$responseTime}ms)");
+        // Send notifications only if status actually changed
+        if ($wasUp !== $isUp) {
+            if (!$isUp) {
+                // Site went DOWN - notify all users
+                $this->notifyAllUsers($site, 'down', $errorMessage);
+                
+                // Increase check interval when site fails (multiply by 2, max 60 minutes)
+                $newInterval = min($site->check_interval * 2, 60);
+                $site->update(['check_interval' => $newInterval]);
+                $this->line("  ⚠️  {$site->name}: DOWN - Increased check interval to {$newInterval} minutes");
+            } else {
+                // Site came BACK UP - notify all users
+                $this->notifyAllUsers($site, 'up');
+                
+                // Reset check interval to default (5 minutes)
+                $site->update(['check_interval' => 5]);
+                $this->line("  ✓ {$site->name}: UP - Reset check interval to 5 minutes");
+            }
+        } else {
+            // Log to console
+            $status = $isUp ? '<info>UP</info>' : '<error>DOWN</error>';
+            $this->newLine();
+            $this->line("  {$site->name}: {$status} ({$responseTime}ms)");
+        }
+    }
+
+    /**
+     * Notify all users about site status change
+     */
+    protected function notifyAllUsers(Site $site, string $status, ?string $errorMessage = null): void
+    {
+        $users = \App\Models\User::all();
+
+        if ($status === 'down') {
+            Notification::send($users, new SiteDownNotification($site, $errorMessage));
+        } else {
+            Notification::send($users, new SiteUpNotification($site));
+        }
     }
 }

@@ -22,13 +22,13 @@ class DatabaseSeeder extends Seeder
         // Create marlon user
         User::factory()->create([
             'name' => 'Marlon',
-            'email' => 'marlon@stupendio.it',
+            'email' => 'marlonpadilla1593@gmail.com',
         ]);
 
         // Create Paolo user
         User::factory()->create([
             'name' => 'Paolo',
-            'email' => 'Paolo@stupendio.it',
+            'email' => 'paolo@stupendio.it',
         ]);
     }
 }
