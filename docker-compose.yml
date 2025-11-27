@@ -16,6 +16,23 @@ services:
             - APP_NAME=${APP_NAME}
 
     ####################################################################################################
+    # Laravel Scheduler (runs schedule:work in background)
+    ####################################################################################################
+    monitoring-scheduler:
+        container_name: ${APP_NAME}-scheduler
+        build: .docker/php
+        volumes:
+            - .:/var/www:cached
+        networks:
+            - proxy-network
+        environment:
+            - APP_NAME=${APP_NAME}
+        command: php artisan schedule:work
+        restart: unless-stopped
+        depends_on:
+            - monitoring-php
+
+    ####################################################################################################
     # Nginx
     ####################################################################################################
     monitoring-nginx:
