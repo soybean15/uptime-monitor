@@ -7,13 +7,13 @@ use App\Livewire\Settings\Profile;
 use App\Livewire\Settings\TwoFactor;
 use App\Livewire\SiteLogs;
 use App\Livewire\Sites;
+use App\Livewire\Welcome;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
 
+
+Route::get('/', Welcome::class)->name('welcome');
 
 Route::prefix('sites')->middleware('auth')->group(function () {
 
