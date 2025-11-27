@@ -62,7 +62,7 @@ services:
         container_name: ${APP_NAME}-phpmyadmin
         image: phpmyadmin/phpmyadmin:latest
         ports:
-            - 8081:80
+            - 8086:80
         links:
             - mysql
         environment:
