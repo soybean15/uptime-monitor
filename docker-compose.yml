@@ -59,54 +59,54 @@ services:
     ####################################################################################################
     # DATABASE (MySQL)
     ####################################################################################################
-    monitoring-mysql:
-        container_name: ${APP_NAME}-mysql
-        image: mysql:8.1
-        ports:
-            - 3307:3306
-        volumes:
-            - .docker/db/data:/var/lib/mysql
-            - .docker/logs:/var/log/mysql
-            - .docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
-            - .docker/db/sql:/docker-entrypoint-initdb.d
-        environment:
-            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-            MYSQL_DATABASE: ${DB_DATABASE}
-            MYSQL_USER: ${DB_USERNAME}
-            MYSQL_PASSWORD: ${DB_PASSWORD}
-        networks:
-            - proxy-network
-        restart: unless-stopped
-        healthcheck:
-            test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-            timeout: 20s
-            retries: 10
-            interval: 10s
+    # monitoring-mysql:
+    #     container_name: ${APP_NAME}-mysql
+    #     image: mysql:8.1
+    #     ports:
+    #         - 3307:3306
+    #     volumes:
+    #         - .docker/db/data:/var/lib/mysql
+    #         - .docker/logs:/var/log/mysql
+    #         - .docker/db/my.cnf:/etc/mysql/conf.d/my.cnf
+    #         - .docker/db/sql:/docker-entrypoint-initdb.d
+    #     environment:
+    #         MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    #         MYSQL_DATABASE: ${DB_DATABASE}
+    #         MYSQL_USER: ${DB_USERNAME}
+    #         MYSQL_PASSWORD: ${DB_PASSWORD}
+    #     networks:
+    #         - proxy-network
+    #     restart: unless-stopped
+    #     healthcheck:
+    #         test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+    #         timeout: 20s
+    #         retries: 10
+    #         interval: 10s
 
-    ####################################################################################################
-    # phpMyAdmin
-    ####################################################################################################
-    monitoring-phpmyadmin:
-        container_name: ${APP_NAME}-phpmyadmin
-        image: phpmyadmin/phpmyadmin:latest
-        ports:
-            - 8086:80
-        links:
-            - monitoring-mysql
-        environment:
-            PMA_HOST: monitoring-mysql
-            PMA_PORT: 3306
-            PMA_USER: ${DB_USERNAME}
-            PMA_PASSWORD: ${DB_PASSWORD}
-            PMA_ARBITRARY: 1
-        volumes:
-            - .docker/phpmyadmin/sessions:/sessions
-        networks:
-            - proxy-network
-        restart: unless-stopped
-        depends_on:
-            monitoring-mysql:
-                condition: service_healthy
+    # ####################################################################################################
+    # # phpMyAdmin
+    # ####################################################################################################
+    # monitoring-phpmyadmin:
+    #     container_name: ${APP_NAME}-phpmyadmin
+    #     image: phpmyadmin/phpmyadmin:latest
+    #     ports:
+    #         - 8086:80
+    #     links:
+    #         - monitoring-mysql
+    #     environment:
+    #         PMA_HOST: monitoring-mysql
+    #         PMA_PORT: 3306
+    #         PMA_USER: ${DB_USERNAME}
+    #         PMA_PASSWORD: ${DB_PASSWORD}
+    #         PMA_ARBITRARY: 1
+    #     volumes:
+    #         - .docker/phpmyadmin/sessions:/sessions
+    #     networks:
+    #         - proxy-network
+    #     restart: unless-stopped
+    #     depends_on:
+    #         monitoring-mysql:
+    #             condition: service_healthy
 
     ####################################################################################################
     # Adminer (Optional)
